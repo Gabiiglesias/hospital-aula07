@@ -1,50 +1,42 @@
 package com.aula07.hospital.service;
 
-import java.util.List;
-
 import org.springframework.stereotype.Service;
 
+import com.aula07.hospital.dto.PacienteRequestDTO;
+import com.aula07.hospital.dto.PacienteResponseDTO;
 import com.aula07.hospital.model.Paciente;
 import com.aula07.hospital.repository.PacienteRepository;
 
 @Service
 public class PacienteService {
 
-    private PacienteRepository repository;
+    private final PacienteRepository repository;
 
     public PacienteService(PacienteRepository repository) {
         this.repository = repository;
     }
 
-    public Paciente salvar(Paciente paciente) {
-        return repository.save(paciente);
+    private Paciente toEntity(PacienteRequestDTO dto) {
+        Paciente paciente = new Paciente();
+        paciente.setNome(dto.getNome());
+        paciente.setCpf(dto.getCpf());
+        paciente.setEmail(dto.getEmail());
+        return paciente;
     }
 
-    public List<Paciente> listarTodos() {
-        return repository.findAll();
+    private PacienteResponseDTO toDTO(Paciente paciente) {
+        return PacienteResponseDTO.builder()
+                .nome(paciente.getNome())
+                .email(paciente.getEmail())
+                .build();
     }
 
-    public Paciente buscarPorId(Long id) {
-        return repository.findById(id).orElse(null);
-    }
+    public PacienteResponseDTO salvar(PacienteRequestDTO dto) {
 
-    public Paciente atualizar(Long id, Paciente paciente) {
-        Paciente existente = repository.findById(id).orElse(null);
+        Paciente paciente = toEntity(dto);
 
-        if (existente != null) {
-            existente.setNome(paciente.getNome());
-            return repository.save(existente);
-        }
+        Paciente salvo = repository.save(paciente);
 
-        return null;
-    }
-
-    public boolean deletar(Long id) {
-        try {
-            repository.deleteById(id);
-            return true;
-        } catch (Exception e) {
-            return false;
-        }
+        return toDTO(salvo);
     }
 }
